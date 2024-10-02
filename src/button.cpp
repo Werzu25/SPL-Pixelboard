@@ -5,15 +5,15 @@ class EntprellterTaster {
 private:
     uint8_t pin;
     unsigned long letzteEntprellZeit;
-    unsigned long entprellVerzögerung;
+    unsigned long entprellVerzoegerung;
     bool letzterTasterZustand;
     bool tasterZustand;
     bool letzterDruckZustand;
 
 public:
     // Konstruktor für die Klasse EntprellterTaster
-    EntprellterTaster(uint8_t tasterPin, unsigned long entprellVerzögerungMs = 50)
-        : pin(tasterPin), entprellVerzögerung(entprellVerzögerungMs), letzteEntprellZeit(0), letzterTasterZustand(HIGH), tasterZustand(HIGH), letzterDruckZustand(false) {
+    EntprellterTaster(uint8_t tasterPin, unsigned long entprellVerzoegerungMs = 50)
+        : pin(tasterPin), entprellVerzoegerung(entprellVerzoegerungMs), letzteEntprellZeit(0), letzterTasterZustand(HIGH), tasterZustand(HIGH), letzterDruckZustand(false) {
         pinMode(pin, INPUT_PULLUP);
     }
 
@@ -24,7 +24,7 @@ public:
             letzteEntprellZeit = millis();
         }
 
-        if ((millis() - letzteEntprellZeit) > entprellVerzögerung) {
+        if ((millis() - letzteEntprellZeit) > entprellVerzoegerung) {
             if (aktuellerZustand != tasterZustand) {
                 tasterZustand = aktuellerZustand;
             }
