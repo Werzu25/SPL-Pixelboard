@@ -6,6 +6,7 @@
     nativeBuildInputs = with pkgs; [
       platformio-core
       clang-tools
+      gnumake
       git
     ];
   };
