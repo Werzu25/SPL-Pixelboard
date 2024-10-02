@@ -32,9 +32,23 @@ public:
 
         letzterTasterZustand = aktuellerZustand;
     }
-
+    // Diese Methode prüft, ob der Taster lange gedrückt wird.
+    bool istLangGedrueckt(unsigned long langDruckDauer) {
+        static unsigned long druckStartZeit = 0;
+        if (tasterZustand == LOW) {
+            if (druckStartZeit == 0) {
+                druckStartZeit = millis();
+            }
+            if ((millis() - druckStartZeit) >= langDruckDauer) {
+                return true;
+            }
+        } else {
+            druckStartZeit = 0;
+        }
+        return false;
+    }
     // Diese Methode prüft, ob der Taster gedrückt ist.
-    bool istGedrueckt() const {
+    bool istGedrueckt() const { 
         return !tasterZustand;
     }
 
