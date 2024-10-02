@@ -4,7 +4,7 @@
 {
   default = pkgs.mkShell {
     nativeBuildInputs = with pkgs; [
-      pio
+      platformio-core
       clang-tools
       git
     ];
