@@ -1,42 +1,47 @@
 #include <Arduino.h>
 
-class DebouncedButton {
+// Die Klasse EntprellterTaster verwaltet die Entprellung eines Tasters.
+class EntprellterTaster {
 private:
     uint8_t pin;
-    unsigned long lastDebounceTime;
-    unsigned long debounceDelay;
-    bool lastButtonState;
-    bool buttonState;
-    bool lastPressState;
+    unsigned long letzteEntprellZeit;
+    unsigned long entprellVerzögerung;
+    bool letzterTasterZustand;
+    bool tasterZustand;
+    bool letzterDruckZustand;
 
 public:
-    DebouncedButton(uint8_t buttonPin, unsigned long debounceDelayMs = 50)
-        : pin(buttonPin), debounceDelay(debounceDelayMs), lastDebounceTime(0), lastButtonState(HIGH), buttonState(HIGH), lastPressState(false) {
+    // Konstruktor für die Klasse EntprellterTaster
+    EntprellterTaster(uint8_t tasterPin, unsigned long entprellVerzögerungMs = 50)
+        : pin(tasterPin), entprellVerzögerung(entprellVerzögerungMs), letzteEntprellZeit(0), letzterTasterZustand(HIGH), tasterZustand(HIGH), letzterDruckZustand(false) {
         pinMode(pin, INPUT_PULLUP);
     }
 
-    void refresh() {
-        bool reading = digitalRead(pin);
-        if (reading != lastButtonState) {
-            lastDebounceTime = millis();
+    // Diese Methode aktualisiert den Tasterzustand und entprellt ihn.
+    void aktualisieren() {
+        bool aktuellerZustand = digitalRead(pin);
+        if (aktuellerZustand != letzterTasterZustand) {
+            letzteEntprellZeit = millis();
         }
 
-        if ((millis() - lastDebounceTime) > debounceDelay) {
-            if (reading != buttonState) {
-                buttonState = reading;
+        if ((millis() - letzteEntprellZeit) > entprellVerzögerung) {
+            if (aktuellerZustand != tasterZustand) {
+                tasterZustand = aktuellerZustand;
             }
         }
 
-        lastButtonState = reading;
+        letzterTasterZustand = aktuellerZustand;
     }
 
-    bool isPressed() const {
-        return !buttonState;
+    // Diese Methode prüft, ob der Taster gedrückt ist.
+    bool istGedrueckt() const {
+        return !tasterZustand;
     }
 
-    bool wasPressed() {
-        bool wasPressed = (buttonState == LOW && lastPressState == false);
-        lastPressState = (buttonState == LOW);
-        return wasPressed;
+    // Diese Methode prüft, ob der Taster gerade gedrückt wurde.
+    bool wurdeGedrueckt() {
+        bool wurdeGedrueckt = (tasterZustand == LOW && letzterDruckZustand == false);
+        letzterDruckZustand = (tasterZustand == LOW);
+        return wurdeGedrueckt;
     }
 };
