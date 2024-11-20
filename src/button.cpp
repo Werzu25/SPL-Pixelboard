@@ -17,11 +17,7 @@ EntprellterTaster::EntprellterTaster(int pin) {
 
 // Aktualisiert den Tasterzustand und entprellt den Taster
 void EntprellterTaster::aktualisieren() {
-#ifdef UNIT_TEST
-    // Unit test specific code
-#else
     bool aktuellerZustand = digitalRead(tasterPin);
-#endif
 
     if (aktuellerZustand != letzterTasterZustand) {
         letzteEntprellZeit = millis();
@@ -33,12 +29,14 @@ void EntprellterTaster::aktualisieren() {
 
             if (tasterZustand == LOW) {
                 druckStartZeit = millis();
-                langGedruecktErkannt = false; // Zurücksetzen des Long-Press-Flags
+                langGedruecktErkannt =
+                    false; // Zurücksetzen des Long-Press-Flags
             } else {
                 unsigned long druckDauer = millis() - druckStartZeit;
                 if (druckDauer >= langDruckDauer && !langGedruecktErkannt) {
                     wurdeLangGedruecktFlag = true;
-                    langGedruecktErkannt = true; // Verhindert wiederholte Erkennung
+                    langGedruecktErkannt =
+                        true; // Verhindert wiederholte Erkennung
                 } else if (druckDauer < langDruckDauer) {
                     wurdeGedruecktFlag = true;
                 }
@@ -58,9 +56,7 @@ void EntprellterTaster::aktualisieren() {
     letzterTasterZustand = aktuellerZustand;
 }
 
-bool EntprellterTaster::istGedrueckt() const {
-    return tasterZustand == LOW;
-}
+bool EntprellterTaster::istGedrueckt() const { return tasterZustand == LOW; }
 
 bool EntprellterTaster::wurdeGedrueckt() {
     if (wurdeGedruecktFlag) {
@@ -77,19 +73,3 @@ bool EntprellterTaster::wurdeLangGedrueckt() {
     }
     return false;
 }
-
-#ifdef UNIT_TEST
-void EntprellterTaster::simulatePress() {
-    tasterZustand = LOW;
-}
-
-void EntprellterTaster::simulateRelease() {
-    tasterZustand = HIGH;
-}
-
-void EntprellterTaster::simulateLongPress(unsigned long duration) {
-    druckStartZeit = millis() - duration;
-    tasterZustand = LOW;
-    langGedruecktErkannt = false;
-}
-#endif
