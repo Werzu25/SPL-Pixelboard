@@ -6,3 +6,5 @@
 .direnv
 .cache
 compile_commands.json
+extenstion.json
+.vscode/extensions.json
