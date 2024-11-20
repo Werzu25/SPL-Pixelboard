@@ -1,3 +1,5 @@
+#ifndef BUTTON_HPP
+#define BUTTON_HPP
 
 class EntprellterTaster {
 
@@ -7,16 +9,6 @@ class EntprellterTaster {
     bool istGedrueckt() const;
     bool wurdeGedrueckt();
     bool wurdeLangGedrueckt();
-
-#ifdef UNIT_TEST
-
-    void simulatePress();
-
-    void simulateRelease();
-
-    void simulateLongPress(unsigned long duration);
-
-#endif
 
   private:
     int tasterPin;
@@ -31,3 +23,5 @@ class EntprellterTaster {
     static const unsigned long entprellVerzoegerung = 50;
     static const unsigned long langDruckDauer = 1000;
 };
+
+#endif
