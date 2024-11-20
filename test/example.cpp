@@ -4,6 +4,6 @@ void setup() {
 }
 
 void loop() {
-    // UNITY_BEGIN();
-    // UNITY_END();
+    UNITY_BEGIN();
+    UNITY_END();
 }
