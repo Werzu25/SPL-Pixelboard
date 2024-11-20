@@ -1,84 +1,95 @@
-#ifndef BUTTON_HPP
-#define BUTTON_HPP
-
+#include "button.hpp"
 #include <Arduino.h>
-#include <button.hpp>
 
-class EntprellterTaster {
-private:
-    bool tasterZustand = HIGH;
-    bool letzterTasterZustand = HIGH;
-    bool letzterDruckZustand = false;
-    unsigned long druckStartZeit = 0;
-    unsigned long letzteEntprellZeit = 0;
-    bool wurdeLangGedruecktFlag = false;
-    bool wurdeGedruecktFlag = false;
-    const unsigned long entprellVerzoegerung = 50;   // Entprellzeit in Millisekunden
-    const unsigned long langDruckDauer = 1000;       // Dauer für langen Druck in Millisekunden
-    int tasterPin;
+// Konstruktor
+EntprellterTaster::EntprellterTaster(int pin) {
+    tasterPin = pin;
+    pinMode(tasterPin, INPUT_PULLUP);
+    tasterZustand = HIGH;
+    letzterTasterZustand = HIGH;
+    letzterDruckZustand = false;
+    druckStartZeit = 0;
+    letzteEntprellZeit = 0;
+    langGedruecktErkannt = false;
+    wurdeGedruecktFlag = false;
+    wurdeLangGedruecktFlag = false;
+}
 
-public:
-    // Konstruktor
-    EntprellterTaster(int pin) {
-        tasterPin = pin;
-        pinMode(tasterPin, INPUT_PULLUP);
+// Aktualisiert den Tasterzustand und entprellt den Taster
+void EntprellterTaster::aktualisieren() {
+#ifdef UNIT_TEST
+    // Unit test specific code
+#else
+    bool aktuellerZustand = digitalRead(tasterPin);
+#endif
+
+    if (aktuellerZustand != letzterTasterZustand) {
+        letzteEntprellZeit = millis();
     }
 
-    // Aktualisiert den Tasterzustand und entprellt den Taster
-    void aktualisieren() {
-        bool aktuellerZustand = digitalRead(tasterPin);
+    if ((millis() - letzteEntprellZeit) > entprellVerzoegerung) {
+        if (aktuellerZustand != tasterZustand) {
+            tasterZustand = aktuellerZustand;
 
-        if (aktuellerZustand != letzterTasterZustand) {
-            letzteEntprellZeit = millis();
-        }
-
-        if ((millis() - letzteEntprellZeit) > entprellVerzoegerung) {
-            if (aktuellerZustand != tasterZustand) {
-                tasterZustand = aktuellerZustand;
-
-                if (tasterZustand == LOW) {
-                    druckStartZeit = millis();
-                } else {
-                    unsigned long druckDauer = millis() - druckStartZeit;
-                    if (druckDauer >= langDruckDauer) {
-                        wurdeLangGedruecktFlag = true;
-                    } else {
-                        wurdeGedruecktFlag = true;
-                    }
+            if (tasterZustand == LOW) {
+                druckStartZeit = millis();
+                langGedruecktErkannt = false; // Zurücksetzen des Long-Press-Flags
+            } else {
+                unsigned long druckDauer = millis() - druckStartZeit;
+                if (druckDauer >= langDruckDauer && !langGedruecktErkannt) {
+                    wurdeLangGedruecktFlag = true;
+                    langGedruecktErkannt = true; // Verhindert wiederholte Erkennung
+                } else if (druckDauer < langDruckDauer) {
+                    wurdeGedruecktFlag = true;
                 }
+                druckStartZeit = 0;
             }
         }
-
-        letzterTasterZustand = aktuellerZustand;
     }
 
-    // Prüft, ob der Taster gedrückt ist
-    bool istGedrueckt() const {
-        return tasterZustand == LOW;
-    }
-
-    // Prüft, ob der Taster gerade gedrückt wurde
-    bool wurdeGedrueckt() {
-        if (wurdeGedruecktFlag) {
-            wurdeGedruecktFlag = false;
-            return true;
+    // Sofortige Langdruck-Erkennung
+    if (tasterZustand == LOW && !langGedruecktErkannt) {
+        if ((millis() - druckStartZeit) >= langDruckDauer) {
+            wurdeLangGedruecktFlag = true;
+            langGedruecktErkannt = true; // Verhindert wiederholte Erkennung
         }
-        return false;
     }
 
-    // Prüft, ob der Taster lange gedrückt wurde
-    bool wurdeLangGedrueckt() {
-        if (wurdeLangGedruecktFlag) {
-            wurdeLangGedruecktFlag = false;
-            return true;
-        }
-        return false;
-    }
+    letzterTasterZustand = aktuellerZustand;
+}
 
-    // Prüft, ob der Taster lange gedrückt wird
-    bool istLangGedrueckt() {
-        return (tasterZustand == LOW) && ((millis() - druckStartZeit) >= langDruckDauer);
-    }
-};
+bool EntprellterTaster::istGedrueckt() const {
+    return tasterZustand == LOW;
+}
 
-#endif // BUTTON_HPP
+bool EntprellterTaster::wurdeGedrueckt() {
+    if (wurdeGedruecktFlag) {
+        wurdeGedruecktFlag = false;
+        return true;
+    }
+    return false;
+}
+
+bool EntprellterTaster::wurdeLangGedrueckt() {
+    if (wurdeLangGedruecktFlag) {
+        wurdeLangGedruecktFlag = false;
+        return true;
+    }
+    return false;
+}
+
+#ifdef UNIT_TEST
+void EntprellterTaster::simulatePress() {
+    tasterZustand = LOW;
+}
+
+void EntprellterTaster::simulateRelease() {
+    tasterZustand = HIGH;
+}
+
+void EntprellterTaster::simulateLongPress(unsigned long duration) {
+    druckStartZeit = millis() - duration;
+    tasterZustand = LOW;
+    langGedruecktErkannt = false;
+}
+#endif
