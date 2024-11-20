@@ -1,25 +1,36 @@
 #include <Arduino.h>
+#include <button.hpp>
 
-// Die Klasse EntprellterTaster verwaltet die Entprellung eines Tasters.
 class EntprellterTaster {
 private:
-    uint8_t pin;
-    unsigned long letzteEntprellZeit;
-    unsigned long entprellVerzoegerung;
-    bool letzterTasterZustand;
-    bool tasterZustand;
-    bool letzterDruckZustand;
+    bool tasterZustand = HIGH;
+    bool letzterTasterZustand = HIGH;
+    unsigned long letzteEntprellZeit = 0;
+    unsigned long druckStartZeit = 0;
+    unsigned long druckEndeZeit = 0;
+    unsigned long letzterKlickZeit = 0;
+
+    const unsigned long entprellVerzoegerung = 50;    // Entprellzeit in Millisekunden
+    const unsigned long langDruckDauer = 1000;        // Dauer für langen Druck in Millisekunden
+    const unsigned long doppelKlickIntervall = 500;   // Maximales Intervall zwischen Klicks für Doppelklick
+
+    int tasterPin;
+
+    bool kurzGedrueckt = false;
+    bool langGedrueckt = false;
+    bool doppelGedrueckt = false;
 
 public:
-    // Konstruktor für die Klasse EntprellterTaster
-    EntprellterTaster(uint8_t tasterPin, unsigned long entprellVerzoegerungMs = 50)
-        : pin(tasterPin), entprellVerzoegerung(entprellVerzoegerungMs), letzteEntprellZeit(0), letzterTasterZustand(HIGH), tasterZustand(HIGH), letzterDruckZustand(false) {
-        pinMode(pin, INPUT_PULLUP);
+    // Konstruktor
+    EntprellterTaster(int pin) {
+        tasterPin = pin;
+        pinMode(tasterPin, INPUT_PULLUP);
     }
 
-    // Diese Methode aktualisiert den Tasterzustand und entprellt ihn.
+    // Aktualisiert den Tasterzustand und entprellt den Taster
     void aktualisieren() {
-        bool aktuellerZustand = digitalRead(pin);
+        bool aktuellerZustand = digitalRead(tasterPin);
+
         if (aktuellerZustand != letzterTasterZustand) {
             letzteEntprellZeit = millis();
         }
@@ -27,35 +38,54 @@ public:
         if ((millis() - letzteEntprellZeit) > entprellVerzoegerung) {
             if (aktuellerZustand != tasterZustand) {
                 tasterZustand = aktuellerZustand;
+
+                if (tasterZustand == LOW) {
+                    // Taster gedrückt
+                    druckStartZeit = millis();
+                } else {
+                    // Taster losgelassen
+                    druckEndeZeit = millis();
+                    unsigned long druckDauer = druckEndeZeit - druckStartZeit;
+
+                    if (druckDauer >= langDruckDauer) {
+                        langGedrueckt = true;
+                    } else {
+                        if ((druckStartZeit - letzterKlickZeit) <= doppelKlickIntervall) {
+                            doppelGedrueckt = true;
+                            letzterKlickZeit = 0; // Zurücksetzen, um Mehrfachauslösung zu verhindern
+                        } else {
+                            kurzGedrueckt = true;
+                            letzterKlickZeit = druckEndeZeit;
+                        }
+                    }
+                }
             }
         }
 
         letzterTasterZustand = aktuellerZustand;
     }
-    // Diese Methode prüft, ob der Taster lange gedrückt wird.
-    bool istLangGedrueckt(unsigned long langDruckDauer) {
-        static unsigned long druckStartZeit = 0;
-        if (tasterZustand == LOW) {
-            if (druckStartZeit == 0) {
-                druckStartZeit = millis();
-            }
-            if ((millis() - druckStartZeit) >= langDruckDauer) {
-                return true;
-            }
-        } else {
-            druckStartZeit = 0;
+
+    bool wurdeKurzGedrueckt() {
+        if (kurzGedrueckt) {
+            kurzGedrueckt = false;
+            return true;
         }
         return false;
     }
-    // Diese Methode prüft, ob der Taster gedrückt ist.
-    bool istGedrueckt() const { 
-        return !tasterZustand;
+
+    bool wurdeLangGedrueckt() {
+        if (langGedrueckt) {
+            langGedrueckt = false;
+            return true;
+        }
+        return false;
     }
 
-    // Diese Methode prüft, ob der Taster gerade gedrückt wurde.
-    bool wurdeGedrueckt() {
-        bool wurdeGedrueckt = (tasterZustand == LOW && letzterDruckZustand == false);
-        letzterDruckZustand = (tasterZustand == LOW);
-        return wurdeGedrueckt;
+    bool wurdeDoppelGedrueckt() {
+        if (doppelGedrueckt) {
+            doppelGedrueckt = false;
+            return true;
+        }
+        return false;
     }
 };
