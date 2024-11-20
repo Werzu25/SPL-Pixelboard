@@ -4,6 +4,9 @@ default:
 upload:
 	pio run -t upload
 
+test:
+    pio test
+
 compile:
 	pio run
 

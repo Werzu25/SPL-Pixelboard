@@ -21,4 +21,4 @@ public:
     bool wurdeGedrueckt();
 };
 
-#endif // BUTTON_HPP
+#endif
