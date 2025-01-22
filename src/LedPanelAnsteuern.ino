@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "Joystick.hpp"
+#include "Joystick.h"
 
 // Task-Handles
 TaskHandle_t TaskAHandle = NULL;

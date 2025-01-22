@@ -2,7 +2,7 @@
 #define JOYSTICK_HPP
 
 #include <Arduino.h>
-#include "button.hpp"
+#include "button.h"
 
 class Joystick : public EntprellterTaster {
 private:
