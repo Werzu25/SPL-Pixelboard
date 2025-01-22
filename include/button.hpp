@@ -1,24 +1,27 @@
 #ifndef BUTTON_HPP
 #define BUTTON_HPP
 
-#include <Arduino.h>
-
 class EntprellterTaster {
-private:
-    uint8_t pin;
-    unsigned long letzteEntprellZeit;
-    unsigned long entprellVerzoegerung;
-    bool letzterTasterZustand;
-    bool tasterZustand;
-    bool letzterDruckZustand;
 
-public:
-    EntprellterTaster(uint8_t tasterPin, unsigned long entprellVerzoegerungMs = 50);
-
+  public:
+    EntprellterTaster(int pin);
     void aktualisieren();
-    bool istLangGedrueckt(unsigned long langDruckDauer);
     bool istGedrueckt() const;
     bool wurdeGedrueckt();
+    bool wurdeLangGedrueckt();
+
+  private:
+    int tasterPin;
+    bool tasterZustand;
+    bool letzterTasterZustand;
+    bool letzterDruckZustand;
+    unsigned long druckStartZeit;
+    unsigned long letzteEntprellZeit;
+    bool langGedruecktErkannt;
+    bool wurdeGedruecktFlag;
+    bool wurdeLangGedruecktFlag;
+    static const unsigned long entprellVerzoegerung = 50;
+    static const unsigned long langDruckDauer = 1000;
 };
 
 #endif
