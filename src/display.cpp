@@ -1,25 +1,23 @@
 #include "../include/display.hpp"
 #include "FastLED.h"
-
 int getLed(int x, int y) {
-    int res = -1;
+    int width = 8; // Breite jeder Matrixzeile
+    int num_matrices = 2; // Anzahl der Matrizen (8x32), angenommen
 
-    if (y < 8) {
-        // 1 LED Matrix
+    // Gesamter Index über mehrere Matrizen hinweg unter Berücksichtigung des Zickzack-Musters
+    int base_index = (y / 8) * 256; // Jede Matrix hat 256 LEDs (8x32)
 
-        res = 255 - x * 8;
-
-        if (x % 2 == 0) {
-            res = res + y;
-        } else {
-            res = res - (7 - y);
-        }
+    // Umkehrung des Zickzack-Musters je nach geradem oder ungeradem x
+    if ((x % 2) == 0) {
+        // Gerade x-Werte: LED-Index nimmt zu
+        return base_index + x * 8 + y % 8;
     } else {
-        // 2 LED Matrix
+        // Ungerade x-Werte: LED-Index nimmt ab
+        return base_index + x * 8 + (7 - (y % 8));
     }
-
-    return res;
 }
+
+
 
 void setLed(int x, int y, CRGB color, CRGB leds[]) {
     // kann sein dass nit geht weil arduino immer kommisch mit libs
