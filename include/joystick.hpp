@@ -1,4 +1,4 @@
-#include "joystickLib.h"
+#include "joystickLib.hpp"
 
 // Implementierung der Klasse EntprellterTaster
 EntprellterTaster::EntprellterTaster(int tasterPin)
