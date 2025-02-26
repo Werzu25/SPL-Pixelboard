@@ -29,14 +29,12 @@ void EntprellterTaster::aktualisieren() {
 
             if (tasterZustand == LOW) {
                 druckStartZeit = millis();
-                langGedruecktErkannt =
-                    false; // Zurücksetzen des Long-Press-Flags
+                langGedruecktErkannt = false; // Zurücksetzen des Long-Press-Flags
             } else {
                 unsigned long druckDauer = millis() - druckStartZeit;
                 if (druckDauer >= langDruckDauer && !langGedruecktErkannt) {
                     wurdeLangGedruecktFlag = true;
-                    langGedruecktErkannt =
-                        true; // Verhindert wiederholte Erkennung
+                    langGedruecktErkannt = true; // Verhindert wiederholte Erkennung
                 } else if (druckDauer < langDruckDauer) {
                     wurdeGedruecktFlag = true;
                 }
@@ -56,7 +54,9 @@ void EntprellterTaster::aktualisieren() {
     letzterTasterZustand = aktuellerZustand;
 }
 
-bool EntprellterTaster::istGedrueckt() const { return tasterZustand == LOW; }
+bool EntprellterTaster::istGedrueckt() const {
+    return tasterZustand == LOW;
+}
 
 bool EntprellterTaster::wurdeGedrueckt() {
     if (wurdeGedruecktFlag) {

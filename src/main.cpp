@@ -1,107 +1,127 @@
 #include <Arduino.h>
-#include "button.hpp"  // Make sure to use correct case for the filename
 
-// Global variables
-TaskHandle_t taskA_Handle = NULL;
-TaskHandle_t taskB_Handle = NULL;
-TaskHandle_t taskC_Handle = NULL;
-volatile char currentTask = 'A';  // Start with task A
-EntprellterTaster taster;  // Declare the Button object
+// Pin definition for joystick button
+#define JOYSTICK_BTN_PIN 2
 
-// Task functions
-void taskA(void *parameter) {
+// Task handles
+TaskHandle_t taskAHandle = NULL;
+TaskHandle_t taskBHandle = NULL;
+TaskHandle_t taskCHandle = NULL;
+
+// Current active task (0 = A, 1 = B, 2 = C)
+volatile int activeTask = 0;
+
+// Semaphore to protect the serial output
+SemaphoreHandle_t serialSemaphore;
+
+// Task A: Print 'A' every 1 second
+void TaskA(void *pvParameters) {
     delay(10);
-    while (true) {
-        if (currentTask == 'A') {
-            Serial.println("Task A running");
+    while (1) {
+        if (activeTask == 0) {
+            if (xSemaphoreTake(serialSemaphore, portMAX_DELAY) == pdTRUE) {
+                Serial.println("A");
+                xSemaphoreGive(serialSemaphore);
+            }
         }
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        vTaskDelay(pdMS_TO_TICKS(1000)); // 1 second delay
     }
 }
 
-void taskB(void *parameter) {
+// Task B: Print 'B' every 2 seconds
+void TaskB(void *pvParameters) {
     delay(10);
-    while (true) {
-        if (currentTask == 'B') {
-            Serial.println("Task B running");
+    while (1) {
+        if (activeTask == 1) {
+            if (xSemaphoreTake(serialSemaphore, portMAX_DELAY) == pdTRUE) {
+                Serial.println("B");
+                xSemaphoreGive(serialSemaphore);
+            }
         }
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        vTaskDelay(pdMS_TO_TICKS(2000)); // 2 seconds delay
     }
 }
 
-void taskC(void *parameter) {
+// Task C: Print 'C' every 5 seconds
+void TaskC(void *pvParameters) {
     delay(10);
-    while (true) {
-        if (currentTask == 'C') {
-            Serial.println("Task C running");
+    while (1) {
+        if (activeTask == 2) {
+            if (xSemaphoreTake(serialSemaphore, portMAX_DELAY) == pdTRUE) {
+                Serial.println("C");
+                xSemaphoreGive(serialSemaphore);
+            }
         }
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds delay
     }
 }
-#include "button.hpp"
-#include "joystick.h"
 
-EntprellterTaster taster(32);  // Initialisiert den Taster an Pin 32
-Joystick joystick(25, 34, 35); // Initialisiert den Joystick an den Pins 25, 34 und 35
+// ISR for joystick button
+void buttonPressed() {
+    // Debounce by ignoring interrupts for 200ms
+    static unsigned long last_interrupt_time = 0;
+    unsigned long interrupt_time = millis();
+    
+    if (interrupt_time - last_interrupt_time > 200) {
+        activeTask = (activeTask + 1) % 3;  // Cycle through tasks (0, 1, 2)
+        
+        if (xSemaphoreTakeFromISR(serialSemaphore, NULL) == pdTRUE) {
+            Serial.print("Switching to task ");
+            Serial.println(activeTask == 0 ? "A" : activeTask == 1 ? "B" : "C");
+            xSemaphoreGiveFromISR(serialSemaphore, NULL);
+        }
+    }
+    last_interrupt_time = interrupt_time;
+}
 
 void setup() {
-    Serial.begin(115200);
+    // Initialize serial communication
+    Serial.begin(9600);
+    while (!Serial) {
+        ; // wait for serial port to connect
+    }
     
-    // Create all three tasks
+    // Create semaphore for serial output
+    serialSemaphore = xSemaphoreCreateMutex();
+    
+    // Configure joystick button pin as input with internal pull-up
+    pinMode(JOYSTICK_BTN_PIN, INPUT_PULLUP);
+    attachInterrupt(digitalPinToInterrupt(JOYSTICK_BTN_PIN), buttonPressed, FALLING);
+    
+    // Create tasks
     xTaskCreate(
-        taskA,
+        TaskA,
         "TaskA",
-        2048,
+        128,
         NULL,
         1,
-        &taskA_Handle
+        &taskAHandle
     );
     
     xTaskCreate(
-        taskB,
+        TaskB,
         "TaskB",
-        2048,
+        128,
         NULL,
         1,
-        &taskB_Handle
+        &taskBHandle
     );
     
     xTaskCreate(
-        taskC,
+        TaskC,
         "TaskC",
-        2048,
+        128,
         NULL,
         1,
-        &taskC_Handle
+        &taskCHandle
     );
     
-    // Initialize button
-    taster.initialisieren();
+    Serial.println("System initialized. Task A active.");
+    
+    // Start the FreeRTOS scheduler
+    vTaskStartScheduler();
 }
 
 void loop() {
-    taster.aktualisieren();
-}
-    joystick.aktualisieren();
-
-    if (taster.wurdeGedrueckt()) {
-        Serial.println("Kurzer Tastendruck erkannt");
-    }
-
-    if (taster.wurdeLangGedrueckt()) {
-        Serial.println("Langer Tastendruck erkannt");
-    }
-
-    int x = joystick.getX();
-    int y = joystick.getY();
-    bool joystickButtonPressed = joystick.istGedrueckt();
-
-    Serial.print("Joystick X: ");
-    Serial.print(x);
-    Serial.print(" Y: ");
-    Serial.println(y);
-    Serial.print("Joystick Button ist ");
-    Serial.println(joystickButtonPressed ? "GEDRUECKT" : "NICHT GEDRUECKT");
-
-    delay(500);  // Verzögerung von 500ms
+    // Empty. Things are done in Tasks.
 }
