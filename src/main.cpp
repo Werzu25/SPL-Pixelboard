@@ -13,56 +13,78 @@ TaskHandle_t TaskAHandle = NULL;
 TaskHandle_t TaskBHandle = NULL;
 TaskHandle_t TaskCHandle = NULL;
 
+// Current active task (0 = A, 1 = B, 2 = C)
+volatile int activeTask = 0;
+
+// Task A: Print 'A' every 1 second
 void TaskA(void *pvParameters) {
-    while (true) {
-        Serial.println("a");
-        vTaskDelay(pdMS_TO_TICKS(2000));
+    delay(10);
+    while (1) {
+        if (activeTask == 0) {
+            Serial.println("A");
+        }
+        vTaskDelay(pdMS_TO_TICKS(1000)); // 1 second delay
     }
 }
 
 void TaskB(void *pvParameters) {
-    while (true) {
-        Serial.println("b");
-        vTaskDelay(pdMS_TO_TICKS(3000));
+    delay(10);
+    while (1) {
+        if (activeTask == 1) {
+            Serial.println("B");
+        }
+        vTaskDelay(pdMS_TO_TICKS(2000)); // 2 seconds delay
     }
 }
 
 void TaskC(void *pvParameters) {
-    while (true) {
-        Serial.println("c");
-        vTaskDelay(pdMS_TO_TICKS(5000));
+    delay(10);
+    while (1) {
+        if (activeTask == 2) {
+            Serial.println("C");
+        }
+        vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds delay
     }
 }
 
+// ISR for joystick button
+void buttonPressed() {
+    // Debounce by ignoring interrupts for 200ms
+    static unsigned long last_interrupt_time = 0;
+    unsigned long interrupt_time = millis();
+
+    if (interrupt_time - last_interrupt_time > 200) {
+        activeTask = (activeTask + 1) % 3; // Cycle through tasks (0, 1, 2)
+        
+        Serial.print("Switching to task ");
+        Serial.println(activeTask == 0 ? "A" : activeTask == 1 ? "B" : "C");
+    }
+    last_interrupt_time = interrupt_time;
+}
+
 void setup() {
-    Serial.begin(115200);
-    delay(2000);
+    // Initialize serial communication
+    Serial.begin(9600);
+    while (!Serial) {
+        ; // wait for serial port to connect
+    }
 
-    Serial.println("pixelboard initalized");
+    // Configure joystick button pin as input with internal pull-up
+    pinMode(JOYSTICK_BTN_PIN, INPUT_PULLUP);
+    attachInterrupt(digitalPinToInterrupt(JOYSTICK_BTN_PIN), buttonPressed,
+                    FALLING);
 
-    FastLED.addLeds<WS2812B, LED_PIN, GRB>(leds, NUM_LEDS);
-    FastLED.setBrightness(50);
-    FastLED.clear(true);
-    FastLED.show();
+    // Create tasks
+    xTaskCreate(TaskA, "TaskA", 128, NULL, 1, &taskAHandle);
+    xTaskCreate(TaskB, "TaskB", 128, NULL, 1, &taskBHandle);
+    xTaskCreate(TaskC, "TaskC", 128, NULL, 1, &taskCHandle);
 
-    // xTaskCreate(TaskA, "TaskA", 1000, NULL, 1, &TaskAHandle);
-    // xTaskCreate(TaskB, "TaskB", 1000, NULL, 1, &TaskBHandle);
-    // xTaskCreate(TaskC, "TaskC", 1000, NULL, 1, &TaskCHandle);
+    Serial.println("System initialized. Task A active.");
+
+    // Start the FreeRTOS scheduler
+    vTaskStartScheduler();
 }
 
 void loop() {
-    // for (int i = 0; i < 32; i++) {
-    //     setLed(i, 0, CRGB::Red, leds);
-    //     FastLED.clear(true);
-    // }
-    setLed(0, 0, CRGB::Blue, leds);
-    setLed(1, 0, CRGB::Blue, leds);
-    setLed(2, 0, CRGB::Blue, leds);
-    setLed(1, 1, CRGB::Yellow, leds);
-    setLed(7, 7, CRGB::Yellow, leds);
-    setLed(7, 31, CRGB::Yellow, leds);
-    leds[0] = CRGB::Green;
-    FastLED.show();
-
-    //still doesnt work kp wieso
+    // Empty. Things are done in Tasks.
 }
