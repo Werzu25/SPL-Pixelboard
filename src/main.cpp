@@ -1,25 +1,25 @@
-#include "display.hpp"
+#include <display.hpp>
 #include <Arduino.h>
 #include <FastLED.h>
+#include <joystick.hpp>
+#include <weatherService.hpp>
+#include <timeService.hpp>
+
+#include <FastLED.h>
+
+#include <LEDMatrix.h>
+#include <LEDText.h>
+#include <FontMatrise.h>
 
 #define LED_PIN 26
 #define NUM_LEDS 512
 #define PANEL_WIDTH 32
 #define PANEL_HEIGHT 8
 
-CRGB leds[NUM_LEDS];
-
-TaskHandle_t TaskAHandle = NULL;
-TaskHandle_t TaskBHandle = NULL;
-TaskHandle_t TaskCHandle = NULL;
-#include "joystick.hpp"
-
-// Pin definition for joystick button and axes
 #define JOYSTICK_BTN_PIN 32
 #define JOYSTICK_X_PIN 34
 #define JOYSTICK_Y_PIN 35
 
-// Task handles
 TaskHandle_t taskAHandle = NULL;
 TaskHandle_t taskBHandle = NULL;
 TaskHandle_t taskCHandle = NULL;
@@ -29,6 +29,7 @@ volatile int activeTask = 0;
 
 // Create a Joystick object
 Joystick joystick(JOYSTICK_BTN_PIN, JOYSTICK_X_PIN, JOYSTICK_Y_PIN);
+TimeService timeService;
 
 // Function to check joystick button
 void checkJoystickButton() {
@@ -55,10 +56,11 @@ void TaskA(void *pvParameters) {
     checkJoystickButton();
     
     if (activeTask == 0) {
-      Serial.println("A");
+      WeatherData weatherData = getWeatherData();  // Changed from getWeatherData() to getWeather()
+      Serial.println(weatherData.temp_c);
     }
     
-    vTaskDelay(pdMS_TO_TICKS(1000)); // 1 second delay
+    vTaskDelay(pdMS_TO_TICKS(10000)); // 10 second delay
   }
 }
 
@@ -67,7 +69,7 @@ void TaskB(void *pvParameters) {
     checkJoystickButton();
     
     if (activeTask == 1) {
-      Serial.println("B");
+      timeService.printLocalTime();
     }
     
     vTaskDelay(pdMS_TO_TICKS(2000)); // 2 seconds delay
@@ -86,9 +88,12 @@ void TaskC(void *pvParameters) {
   }
 }
 
-void setup1() {
+void setup() {
   // Initialize serial communication
   Serial.begin(115200);
+  setupWeather();
+  timeService.begin();
+  timeService.updateTime();
   
   // Initialize joystick pins
   pinMode(JOYSTICK_BTN_PIN, INPUT_PULLUP);
@@ -101,7 +106,7 @@ void setup1() {
   xTaskCreate(
     TaskA,          // Task function
     "TaskA",        // Task name
-    2048,           // Stack size (in words)
+    8192,           // Stack size (in words)
     NULL,           // Task parameters
     1,              // Priority
     &taskAHandle    // Task handle
@@ -128,6 +133,6 @@ void setup1() {
   Serial.println("System initialized. Task A active.");
 }
 
-void loop1() {
+void loop() {
   // Empty. All the work is done in Tasks.
 }
