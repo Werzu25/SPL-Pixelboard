@@ -6,7 +6,7 @@
 class EntprellterTaster {
 public:
     EntprellterTaster(int pin);
-    void aktualisieren();
+    virtual void aktualisiere(); // Declare as virtual
     bool istGedrueckt() const;
     bool wurdeGedrueckt();
     bool wurdeLangGedrueckt();

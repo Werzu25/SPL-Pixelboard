@@ -16,7 +16,7 @@ EntprellterTaster::EntprellterTaster(int pin) {
 }
 
 // Aktualisiert den Tasterzustand und entprellt den Taster
-void EntprellterTaster::aktualisieren() {
+void EntprellterTaster::aktualisiere() {
     bool aktuellerZustand = digitalRead(tasterPin);
 
     if (aktuellerZustand != letzterTasterZustand) {

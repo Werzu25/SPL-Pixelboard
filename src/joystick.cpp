@@ -1,30 +1,24 @@
-#ifndef JOYSTICK_HPP
-#define JOYSTICK_HPP
-
+#include "joystick.hpp"
 #include <Arduino.h>
-#include "button.hpp"
 
-class Joystick : public EntprellterTaster {
-private:
-    int pinX;
-    int pinY;
+// Konstruktor
+Joystick::Joystick(int buttonPin, int xPin, int yPin) 
+    : EntprellterTaster(buttonPin), analogPinX(xPin), analogPinY(yPin), currentX(0), currentY(0) {
+    // Keine zusätzliche Initialisierung erforderlich
+}
 
-public:
-    // Constructor
-    Joystick(int pinButton, int pinX, int pinY) : EntprellterTaster(pinButton), pinX(pinX), pinY(pinY) {
-        pinMode(pinX, INPUT);
-        pinMode(pinY, INPUT);
-    }
+void Joystick::aktualisiere() {
+    EntprellterTaster::aktualisiere(); // Aktualisiert den Tasterzustand
 
-    // Get the X position of the joystick
-    int getX() {
-        return analogRead(pinX);
-    }
+    // Lesen der Joystick-Achsen
+    currentX = analogRead(analogPinX);
+    currentY = analogRead(analogPinY);
+}
 
-    // Get the Y position of the joystick
-    int getY() {
-        return analogRead(pinY);
-    }
-};
+int Joystick::getX() const {
+    return currentX;
+}
 
-#endif // JOYSTICK_HPP
+int Joystick::getY() const {
+    return currentY;
+}

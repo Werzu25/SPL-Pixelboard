@@ -20,21 +20,21 @@ void test_button_initial_state(void) {
 
 void test_button_press(void) {
     simulatedButtonState = LOW;
-    button->aktualisieren();
+    button->aktualisiere();
     TEST_ASSERT_TRUE(button->istGedrueckt());
 
     simulatedButtonState = HIGH;
-    button->aktualisieren();
+    button->aktualisiere();
     TEST_ASSERT_TRUE(button->istGedrueckt() == false);
 }
 
 void test_button_short_press_detection(void) {
     simulatedButtonState = LOW;
-    button->aktualisieren();
+    button->aktualisiere();
     delay(50);
-    button->aktualisieren();
+    button->aktualisiere();
     simulatedButtonState = HIGH;
-    button->aktualisieren();
+    button->aktualisiere();
 
     TEST_ASSERT_TRUE(button->wurdeGedrueckt());
     TEST_ASSERT_FALSE(button->wurdeLangGedrueckt());
@@ -42,11 +42,11 @@ void test_button_short_press_detection(void) {
 
 void test_button_long_press_detection(void) {
     simulatedButtonState = LOW;
-    button->aktualisieren();
+    button->aktualisiere();
     delay(600);
-    button->aktualisieren();
+    button->aktualisiere();
     simulatedButtonState = HIGH;
-    button->aktualisieren();
+    button->aktualisiere();
 
     TEST_ASSERT_TRUE(button->wurdeLangGedrueckt());
 }
