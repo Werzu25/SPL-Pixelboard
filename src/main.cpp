@@ -1,4 +1,17 @@
+#include "display.hpp"
 #include <Arduino.h>
+#include <FastLED.h>
+
+#define LED_PIN 26
+#define NUM_LEDS 512
+#define PANEL_WIDTH 32
+#define PANEL_HEIGHT 8
+
+CRGB leds[NUM_LEDS];
+
+TaskHandle_t TaskAHandle = NULL;
+TaskHandle_t TaskBHandle = NULL;
+TaskHandle_t TaskCHandle = NULL;
 #include "joystick.hpp"
 
 // Pin definition for joystick button and axes
@@ -49,7 +62,6 @@ void TaskA(void *pvParameters) {
   }
 }
 
-// Task B: Print 'B' every 2 seconds
 void TaskB(void *pvParameters) {
   while (1) {
     checkJoystickButton();
@@ -62,7 +74,6 @@ void TaskB(void *pvParameters) {
   }
 }
 
-// Task C: Print 'C' every 5 seconds
 void TaskC(void *pvParameters) {
   while (1) {
     checkJoystickButton();
