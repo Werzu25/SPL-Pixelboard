@@ -11,11 +11,26 @@
 #include <LEDText.h>
 #include <FontMatrise.h>
 
+/*
+// For LED Matrix
+#define LED_PIN        25
+#define COLOR_ORDER    GRB
+#define CHIPSET        WS2812B
+
+#define MATRIX_WIDTH   68
+#define MATRIX_HEIGHT  7
+#define MATRIX_TYPE    HORIZONTAL_ZIGZAG_MATRIX
+
+cLEDMatrix<MATRIX_WIDTH, MATRIX_HEIGHT, MATRIX_TYPE> leds;
+
+cLEDText ScrollingMsg;
+
+
 #define LED_PIN 26
 #define NUM_LEDS 512
 #define PANEL_WIDTH 32
 #define PANEL_HEIGHT 8
-
+*/
 #define JOYSTICK_BTN_PIN 32
 #define JOYSTICK_X_PIN 34
 #define JOYSTICK_Y_PIN 35
@@ -88,7 +103,7 @@ void TaskC(void *pvParameters) {
   }
 }
 
-void setup() {
+void setup1() {
   // Initialize serial communication
   Serial.begin(115200);
   setupWeather();
@@ -133,6 +148,6 @@ void setup() {
   Serial.println("System initialized. Task A active.");
 }
 
-void loop() {
+void loop1() {
   // Empty. All the work is done in Tasks.
 }
