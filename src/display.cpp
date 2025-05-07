@@ -1,4 +1,5 @@
 #include "display.hpp"
+#include "font.hpp"
 #include <FastLED.h>
 
 #define NUM_LEDS 256
@@ -50,3 +51,28 @@ void Display::setLed(int x, int y, CRGB color) {
 }
 
 void Display::clear() { FastLED.clear(true); }
+
+void Display::print(String s) {
+    clear();
+    int x = 0;
+    int y = 4; // Center vertically in the 16-pixel height display
+    
+    for (int i = 0; i < s.length(); i++) {
+        const uint8_t* charData = getCharData(s[i]);
+        
+        // Draw each column of the character
+        for (int col = 0; col < 5; col++) {
+            if (x + col >= 32) break; // Don't draw beyond display width
+            
+            // Draw each pixel in the column
+            for (int row = 0; row < 7; row++) {
+                if (charData[row] & (0x10 >> col)) { // Check if pixel should be lit
+                    setLed(x + col, y + row, CRGB::White);
+                }
+            }
+        }
+        
+        x += 6; // Move to next character position (5 pixels + 1 pixel spacing)
+        if (x >= 32) break; // Stop if we've reached the end of the display
+    }
+}

@@ -13,25 +13,15 @@ void TaskSwitcher(void *pvParameters) {
     vector<TaskHandle_t> tasks = pb->getTasks();
 
     int activeTask = 0;
+    int lastActiveTask = activeTask;
     static unsigned long lastCheckTime = 0;
 
     vTaskDelay(pdMS_TO_TICKS(100));
 
     for (size_t i = 0; i < tasks.size(); i++) {
-        if (tasks[i] == NULL) {
-            Serial.print("Task ");
-            Serial.print(i);
-            Serial.println(" is NULL!");
-            continue;
-        }
-        
         if (i == activeTask) {
-            Serial.print("Resuming task ");
-            Serial.println(i);
             vTaskResume(tasks[i]);
         } else {
-            Serial.print("Suspending task ");
-            Serial.println(i);
             vTaskSuspend(tasks[i]);
         }
     }
@@ -41,26 +31,26 @@ void TaskSwitcher(void *pvParameters) {
 
         if (millis() - lastCheckTime >= 50) {
             if (pb->joystick.wasPressed()) {
-                if (tasks[activeTask] != NULL && tasks[activeTask] != xTaskGetCurrentTaskHandle()) {
-                    Serial.print("Suspending task ");
-                    Serial.println(activeTask);
-                    vTaskSuspend(tasks[activeTask]);
-                }
-
+                vTaskSuspend(tasks[activeTask]);
+                vector<bool> wasSuspended = pb->getWasSuspended();
+                wasSuspended[activeTask] = true;
+                pb->setWasSuspended(wasSuspended);
                 activeTask = (activeTask + 1) % tasks.size();
-                Serial.print("Switching to task ");
-                Serial.println(activeTask);
-
-                if (tasks[activeTask] != NULL && tasks[activeTask] != xTaskGetCurrentTaskHandle()) {
-                    Serial.print("Resuming task ");
-                    Serial.println(activeTask);
-                    vTaskResume(tasks[activeTask]);
-                }
+                pb->display.clear();
+                vTaskResume(tasks[activeTask]);
             }
 
             lastCheckTime = millis();
         }
 
-        vTaskDelay(pdMS_TO_TICKS(10));
+        if (lastActiveTask != activeTask) {
+            Serial.print("[TaskSwitcher] Switching from Task ");
+            Serial.print(lastActiveTask);
+            Serial.print(" to Task ");
+            Serial.println(activeTask);
+            lastActiveTask = activeTask;
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(50));
     }
 }
