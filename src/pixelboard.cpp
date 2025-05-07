@@ -7,7 +7,7 @@ PixelBoard::PixelBoard(int leds1_pin, int leds2_pin, int joystick_pin,
                        const char *password, vector<TaskHandle_t> tasks)
     : display(leds1_pin, leds2_pin),
       joystick(joystick_pin, joystickX_pin, joystickY_pin),
-      wifi(ssid, password), tasks() {
+      wifi(ssid, password), tasks(tasks) {
 
     Serial.println("pixelboard initalized");
 }

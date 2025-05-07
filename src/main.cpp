@@ -18,7 +18,7 @@ TaskHandle_t SnakeHandle = NULL;
 TaskHandle_t NtpHandle = NULL;
 TaskHandle_t taskSwitcherHandle = NULL;
 PixelBoard *pixelboardPtr;
-vector<TaskHandle_t> tasks = {SnakeHandle, NtpHandle};
+vector<TaskHandle_t> tasks;
 
 void setup() {
     Serial.begin(115200);
@@ -26,13 +26,18 @@ void setup() {
 
     PixelBoard *pixelboard =
         new PixelBoard(LEDS1_PIN, LEDS2_PIN, JOYSTICK_BUTTON_PIN,
-                       JOYSTICK_X_PIN, JOYSTICK_Y_PIN, ssid, password, tasks);
+                       JOYSTICK_X_PIN, JOYSTICK_Y_PIN, ssid, password, vector<TaskHandle_t>());
     pixelboardPtr = pixelboard;
 
-    xTaskCreate(TaskSwitcher, "TaskSwitcher", 10000, pixelboardPtr, 1,
-                &taskSwitcherHandle);
     xTaskCreate(Snake, "Snake", 10000, pixelboardPtr, 1, &SnakeHandle);
     xTaskCreate(Ntp, "Ntp", 10000, pixelboardPtr, 1, &NtpHandle);
+    xTaskCreate(TaskSwitcher, "TaskSwitcher", 10000, pixelboardPtr, 1,
+                &taskSwitcherHandle);
+    
+    tasks = {SnakeHandle, NtpHandle};
+    pixelboardPtr->tasks = tasks;
+
+    // pixelboard->wifi.begin();
 }
 
 void loop() {}

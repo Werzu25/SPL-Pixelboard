@@ -1,4 +1,2 @@
-zwischen tasks switchen (fehler irgendwo bei joystick klasse) / button von leon und ju
 snake bug wo er in sich selber reinfährt
-WiFi.h not found
 mqtt snake steuern fur greini

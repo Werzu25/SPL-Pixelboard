@@ -16,6 +16,7 @@ class PixelBoard {
     Display display;
     Joystick joystick;
     WiFiManager wifi;
+    vector<TaskHandle_t> tasks;
     vector<TaskHandle_t> getTasks();
 
   private:
@@ -24,7 +25,6 @@ class PixelBoard {
     int joystick_pin;
     const char *ssid;
     const char *password;
-    vector<TaskHandle_t> tasks;
 };
 
 #endif
