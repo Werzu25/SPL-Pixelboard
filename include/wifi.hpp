@@ -1,8 +1,6 @@
 #ifndef WIFI_HPP
 #define WIFI_HPP
 
-// #include <WiFi.h>
-
 class WiFiManager {
   public:
     WiFiManager(const char *ssid, const char *password);
