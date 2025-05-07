@@ -37,7 +37,7 @@ void setup() {
     tasks = {SnakeHandle, NtpHandle};
     pixelboardPtr->tasks = tasks;
 
-    // pixelboard->wifi.begin();
+    pixelboard->wifi.begin();
 }
 
 void loop() {}

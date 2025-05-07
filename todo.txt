@@ -1,2 +1,5 @@
-snake bug wo er in sich selber reinfährt
-mqtt snake steuern fur greini
+- font libary
+- mqtt snake steuern fur greini (leon)
+- bei task switchen snake neustarten
+- menu task
+- ntp & weather anzeigen
