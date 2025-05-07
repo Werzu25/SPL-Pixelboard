@@ -23,10 +23,6 @@ void Ntp(void *pvParameters) {
 #include "time.h"
 #include "ntp.hpp"
 
-const char* ntpServer = "pool.ntp.org";
-const long  gmtOffset_sec = 3600;
-const int   daylightOffset_sec = 3600;
-
 bool begin() {
     if (WiFi.status() != WL_CONNECTED) {
         Serial.println("WiFi not connected - cannot sync time");
