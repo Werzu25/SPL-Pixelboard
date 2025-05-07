@@ -3,24 +3,22 @@
 
 #include "button.hpp"
 
-class Joystick : public EntprellterTaster {
-private:
+enum Direction { LEFT, RIGHT, UP, DOWN, NONE };
+
+class Joystick : public Button {
+  private:
     int analogPinX;
     int analogPinY;
     int currentX;
     int currentY;
+    Direction currentDirection;
 
-public:
-    // Konstruktor
+  public:
     Joystick(int buttonPin, int xPin, int yPin);
-
-    // Überschreibt die Aktualisierungsmethode, um Joystick-Daten zu lesen
-    void aktualisiere() override;
-    // Getter für X-Wert des Joysticks
+    void update() override;
     int getX() const;
-
-    // Getter für Y-Wert des Joysticks
     int getY() const;
+    Direction getCurrentDirection() const;
 };
 
-#endif // JOYSTICK_HPP
+#endif

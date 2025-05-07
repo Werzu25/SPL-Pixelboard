@@ -1,29 +1,52 @@
-#include "../include/display.hpp"
-#include "FastLED.h"
-int getLed(int x, int y) {
-    int width = 8; // Breite jeder Matrixzeile
-    int num_matrices = 2; // Anzahl der Matrizen (8x32), angenommen
+#include "display.hpp"
+#include <FastLED.h>
 
-    // Gesamter Index über mehrere Matrizen hinweg unter Berücksichtigung des Zickzack-Musters
-    int base_index = (y / 8) * 256; // Jede Matrix hat 256 LEDs (8x32)
+#define NUM_LEDS 256
 
-    // Umkehrung des Zickzack-Musters je nach geradem oder ungeradem x
-    if ((x % 2) == 0) {
-        // Gerade x-Werte: LED-Index nimmt zu
-        return base_index + x * 8 + y % 8;
-    } else {
-        // Ungerade x-Werte: LED-Index nimmt ab
-        return base_index + x * 8 + (7 - (y % 8));
+Display::Display(int leds1_pin, int leds2_pin)
+    : leds1_pin(leds1_pin), leds2_pin(leds2_pin) {
+    leds1 = new CRGB[NUM_LEDS];
+    leds2 = new CRGB[NUM_LEDS];
+
+    switch (leds1_pin) {
+    case 25:
+        FastLED.addLeds<WS2812B, 25, GRB>(leds1, NUM_LEDS);
+        break;
+    default:
+        break;
     }
-}
+    switch (leds2_pin) {
+    case 26:
+        FastLED.addLeds<WS2812B, 26, GRB>(leds2, NUM_LEDS);
+        break;
+    default:
+        break;
+    }
 
-
-
-void setLed(int x, int y, CRGB color, CRGB leds[]) {
-    // kann sein dass nit geht weil arduino immer kommisch mit libs
-    int index = getLed(x, y);
-    leds[index] = color;
-    Serial.print("setLed: ");
-    Serial.println(index);
+    FastLED.setBrightness(50);
+    FastLED.clear(true);
     FastLED.show();
 }
+
+int Display::getLed(int x, int y) {
+    int res = x * 8;
+
+    if (x % 2 == 0) {
+        res = res + 7 - y;
+    } else {
+        res = res + y;
+    }
+
+    return res;
+}
+
+void Display::setLed(int x, int y, CRGB color) {
+    if (y < 8) {
+        leds1[getLed(31 - x, 7 - y)] = color;
+    } else {
+        leds2[getLed(x, y - 8)] = color;
+    }
+    FastLED.show();
+}
+
+void Display::clear() { FastLED.clear(true); }

@@ -3,7 +3,18 @@
 
 #include <FastLED.h>
 
-int getLed(int x, int y);
-void setLed(int x, int y, CRGB color, CRGB leds[]);
+class Display {
+  public:
+    Display(int leds1_pin, int leds2_pin);
+    void setLed(int x, int y, CRGB color);
+    void clear();
+
+  private:
+    int getLed(int x, int y);
+    int leds1_pin;
+    int leds2_pin;
+    CRGB *leds1;
+    CRGB *leds2;
+};
 
 #endif
