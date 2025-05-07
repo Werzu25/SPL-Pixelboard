@@ -1,5 +1,2 @@
-- font libary
+- font libary & menu task
 - mqtt snake steuern fur greini (leon)
-- bei task switchen snake neustarten
-- menu task
-- ntp & weather anzeigen
