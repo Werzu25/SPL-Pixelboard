@@ -1,15 +1,50 @@
-#include "pixelboard.hpp"
-#include "Arduino.h"
+#ifndef PIXELBOARD_HPP
+#define PIXELBOARD_HPP
+
+#include "display.hpp"
+#include "joystick.hpp"
+#include "wifi.hpp"
+#include "mqtt_service.hpp"
+#include <PubSubClient.h>
 #include <vector>
 
-PixelBoard::PixelBoard(int leds1_pin, int leds2_pin, int joystick_pin,
-                       int joystickX_pin, int joystickY_pin, const char *ssid,
-                       const char *password, vector<TaskHandle_t> tasks)
-    : display(leds1_pin, leds2_pin),
-      joystick(joystick_pin, joystickX_pin, joystickY_pin),
-      wifi(ssid, password), tasks(tasks) {
+using namespace std;
 
-    Serial.println("pixelboard initalized");
-}
+class PixelBoard {
+public:
+  PixelBoard(int leds1_pin,
+             int leds2_pin,
+             int joystick_pin,
+             int joystickX_pin,
+             int joystickY_pin,
+             const char* ssid,
+             const char* password,
+             const vector<TaskHandle_t>& tasks,
+             const char* mqtt_user,
+             const char* mqtt_password,
+             int mqtt_port,
+             PubSubClient& mqtt_client);
 
-vector<TaskHandle_t> PixelBoard::getTasks() { return tasks; }
+  Display                     display;
+  Joystick                     joystick;
+  WiFiManager                  wifi;
+  mqtt_service                 mqtt;
+  vector<TaskHandle_t>         tasks;
+
+  const vector<TaskHandle_t>& getTasks() const;
+
+private:
+  int               leds1_pin;
+  int               leds2_pin;
+  int               joystick_pin;
+  int               joystickX_pin;
+  int               joystickY_pin;
+  const char*       ssid;
+  const char*       password;
+  const char*       mqtt_user;
+  const char*       mqtt_password;
+  int               mqtt_port;
+  PubSubClient&     mqtt_client;
+};
+
+#endif
