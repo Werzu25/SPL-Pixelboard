@@ -29,6 +29,8 @@ void setup() {
                        JOYSTICK_X_PIN, JOYSTICK_Y_PIN, ssid, password, tasks);
     pixelboardPtr = pixelboard;
 
+    pixelboard->wifi.begin();
+
     xTaskCreate(TaskSwitcher, "TaskSwitcher", 10000, pixelboardPtr, 1,
                 &taskSwitcherHandle);
     xTaskCreate(Snake, "Snake", 10000, pixelboardPtr, 1, &SnakeHandle);
