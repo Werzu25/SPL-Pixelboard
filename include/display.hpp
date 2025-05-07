@@ -8,6 +8,7 @@ class Display {
     Display(int leds1_pin, int leds2_pin);
     void setLed(int x, int y, CRGB color);
     void clear();
+    void print(char* str);
 
   private:
     int getLed(int x, int y);

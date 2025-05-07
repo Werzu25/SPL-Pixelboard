@@ -1,5 +1,8 @@
-#include "display.hpp"
 #include <FastLED.h>
+#include <stdlib.h>
+#include <FontMatrise.h>
+#include "display.hpp"
+#include "ntp.hpp"
 
 #define NUM_LEDS 256
 
@@ -50,3 +53,18 @@ void Display::setLed(int x, int y, CRGB color) {
 }
 
 void Display::clear() { FastLED.clear(true); }
+
+
+void Display::print(char* str) {
+    auto tm = ntp.getCurrentTimeStruct();
+    tbuff[0] = EFFECT_SCROLL_LEFT[0];
+    int len = snprintf((char*)(tbuff + 1),
+                       sizeof(tbuff) - 1,str);
+    ScrollingMsg.SetText(tbuff, (unsigned char)(len + 1));
+    if (ScrollingMsg.UpdateText() == -1) {
+      ScrollingMsg.SetText(tbuff, (unsigned char)(len + 1));
+    }
+    FastLED.show();
+    vTaskDelay(pdMS_TO_TICKS(SCROLL_SPEED));
+      
+}
