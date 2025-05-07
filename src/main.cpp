@@ -7,6 +7,14 @@
 
 #define LEDS1_PIN 25
 #define LEDS2_PIN 26
+#define COLOR_ORDER       GRB
+#define CHIPSET           WS2812B
+#define MATRIX_WIDTH      32
+#define MATRIX_HEIGHT     8
+#define BRIGHTNESS        50
+#define NUM_LEDS          (MATRIX_WIDTH * MATRIX_HEIGHT)
+#define SCROLL_SPEED      50
+
 #define JOYSTICK_BUTTON_PIN 32
 #define JOYSTICK_X_PIN 34
 #define JOYSTICK_Y_PIN 35
