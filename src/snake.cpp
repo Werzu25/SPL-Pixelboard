@@ -16,8 +16,8 @@ const CRGB WALL_COLOR = CRGB::Red;
 void generateFood(int &foodX, int &foodY,
                   const list<pair<int, int>> &snakeBody) {
     do {
-        foodX = random(1, GRID_SIZE_X - 1);
-        foodY = random(1, GRID_SIZE_Y - 1);
+        foodX = random(0, GRID_SIZE_X);
+        foodY = random(0, GRID_SIZE_Y);
     } while (any_of(
         snakeBody.begin(), snakeBody.end(), [&](const pair<int, int> &segment) {
             return segment.first == foodX && segment.second == foodY;
@@ -25,9 +25,10 @@ void generateFood(int &foodX, int &foodY,
 }
 
 void Snake(void *pvParameters) {
-    vTaskDelay(50);
+    vTaskDelay(pdMS_TO_TICKS(100));
 
     PixelBoard *pb = static_cast<PixelBoard *>(pvParameters);
+    bool wasSuspended = false;
     
     while (true) {
         list<pair<int, int>> snakeBody;
@@ -44,23 +45,10 @@ void Snake(void *pvParameters) {
         int previousSnakeHeadX = -1;
         int previousSnakeHeadY = -1;
 
-        for (int x = 0; x < GRID_SIZE_X; ++x) {
-            pb->display.setLed(x, 0, WALL_COLOR);
-            pb->display.setLed(x, GRID_SIZE_Y - 1, WALL_COLOR);
-        }
-        for (int y = 0; y < GRID_SIZE_Y; ++y) {
-            pb->display.setLed(0, y, WALL_COLOR);
-            pb->display.setLed(GRID_SIZE_X - 1, y, WALL_COLOR);
-        }
-
         for (int i = 0; i < snakeLength; ++i) {
             snakeBody.push_back({snakeHeadX - i, snakeHeadY});
         }
-
         generateFood(foodX, foodY, snakeBody);
-        previousFoodX = foodX;
-        previousSnakeHeadX = snakeHeadX;
-        previousSnakeHeadY = snakeHeadY;
 
         for (const auto &segment : snakeBody) {
             pb->display.setLed(segment.first, segment.second, SNAKE_COLOR);
@@ -68,6 +56,13 @@ void Snake(void *pvParameters) {
         pb->display.setLed(foodX, foodY, FOOD_COLOR);
 
         while (!gameOver) {
+            vector<bool> wasSuspended = pb->getWasSuspended();
+            if (wasSuspended[1] == true) {
+                wasSuspended[1] = false;
+                pb->setWasSuspended(wasSuspended);
+                break;
+            }
+
             pb->joystick.update();
             direction = pb->joystick.getCurrentDirection();
             if (direction == NONE) {
@@ -111,23 +106,24 @@ void Snake(void *pvParameters) {
                     break;
                 }
 
-                if (nextHeadX < 1 || nextHeadX >= GRID_SIZE_X - 1 ||
-                    nextHeadY < 1 || nextHeadY >= GRID_SIZE_Y - 1) {
-                    gameOver = true;
-                    break;
+                if (nextHeadX < 0) {
+                    nextHeadX = GRID_SIZE_X - 1;
+                } else if (nextHeadX >= GRID_SIZE_X) {
+                    nextHeadX = 0;
+                }
+                if (nextHeadY < 0) {
+                    nextHeadY = GRID_SIZE_Y - 1;
+                } else if (nextHeadY >= GRID_SIZE_Y) {
+                    nextHeadY = 0;
                 }
 
                 // Check collision with snake body
                 bool collision = false;
-                // Skip the last segment (tail) since it will move
-                auto it = snakeBody.begin();
-                auto end = --snakeBody.end();  // Get iterator to second-to-last element
-                while (it != end) {
-                    if (it->first == nextHeadX && it->second == nextHeadY) {
+                for (const auto &segment : snakeBody) {
+                    if (segment.first == nextHeadX && segment.second == nextHeadY) {
                         collision = true;
                         break;
                     }
-                    ++it;
                 }
                 
                 if (collision) {
@@ -159,25 +155,27 @@ void Snake(void *pvParameters) {
                 previousSnakeHeadY = snakeHeadY;
             }
 
-            vTaskDelay(10);
+            vTaskDelay(pdMS_TO_TICKS(10));
         }
 
-        pb->display.clear();
-        
         vector<pair<int, int>> deathAnimation;
-        for (const auto &segment : snakeBody) {
-            deathAnimation.push_back(segment);
-        }
-        
-        for (int i = 0; i < 3; i++) {
-            for (const auto &segment : deathAnimation) {
-                pb->display.setLed(segment.first, segment.second, WALL_COLOR);
+        if (gameOver) {  
+            pb->display.clear();
+            
+            for (const auto &segment : snakeBody) {
+                deathAnimation.push_back(segment);
             }
-            vTaskDelay(pdMS_TO_TICKS(200));
-            for (const auto &segment : deathAnimation) {
-                pb->display.setLed(segment.first, segment.second, BACKGROUND_COLOR);
+            
+            for (int i = 0; i < 3; i++) {
+                for (const auto &segment : deathAnimation) {
+                    pb->display.setLed(segment.first, segment.second, WALL_COLOR);
+                }
+                vTaskDelay(pdMS_TO_TICKS(200));
+                for (const auto &segment : deathAnimation) {
+                    pb->display.setLed(segment.first, segment.second, BACKGROUND_COLOR);
+                }
+                vTaskDelay(pdMS_TO_TICKS(200));
             }
-            vTaskDelay(pdMS_TO_TICKS(200));
         }
 
         pb->display.clear();
