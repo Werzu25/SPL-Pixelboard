@@ -3,11 +3,11 @@
 #include <PubSubClient.h>
 #include "mqtt_service.hpp"
 
-mqtt_service::mqtt_service(char* user, char* password, int port, PubSubClient client)
-    : user(user), password(password), port(port), client(client) {
-
-    }
-
+mqtt_service::mqtt_service(const char* user,
+                                   const char* pass,
+                                   int port,
+                                   PubSubClient client)
+    : user(user), password(pass), port(port), client(client) {}
 
 char* callback(char* topic, byte* payload, unsigned int length) {
     char* payloadString = (char*)malloc(length + 1);

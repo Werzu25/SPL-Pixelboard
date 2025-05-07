@@ -10,19 +10,6 @@
 
 using namespace std;
 
-class PixelBoard {
-  public:
-    PixelBoard(int leds1_pin, int leds2_pin, int joystick_pin,
-               int joystickX_pin, int joystickY_pin, const char *ssid,
-               const char *password, vector<TaskHandle_t> tasks, vector<bool> wasSuspended);
-    Display display;
-    Joystick joystick;
-    WiFiManager wifi;
-    vector<TaskHandle_t> tasks;
-    vector<bool> wasSuspended;
-    vector<bool> getWasSuspended();
-    void setWasSuspended(vector<bool> v);
-    vector<TaskHandle_t> getTasks();
 class PixelBoard
 {
 public:
@@ -34,6 +21,7 @@ public:
              const char *ssid,
              const char *password,
              const vector<TaskHandle_t> &tasks,
+             const vector<bool> &wasSuspended,
              const char *mqtt_user,
              const char *mqtt_password,
              int mqtt_port,
@@ -44,7 +32,10 @@ public:
   WiFiManager wifi;
   mqtt_service mqtt;
   vector<TaskHandle_t> tasks;
+  vector<bool> wasSuspended;
   vector<TaskHandle_t> getTasks();
+  vector<bool> getWasSuspended();
+  void setWasSuspended(vector<bool> v);
 
 private:
   int leds1_pin;
