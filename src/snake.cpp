@@ -12,6 +12,7 @@ const CRGB SNAKE_COLOR = CRGB::Green;
 const CRGB FOOD_COLOR = CRGB::Blue;
 const CRGB BACKGROUND_COLOR = CRGB::Black;
 const CRGB WALL_COLOR = CRGB::Red;
+Direction payload_Direction = NONE;
 
 void generateFood(int &foodX, int &foodY,
                   const list<pair<int, int>> &snakeBody) {
@@ -24,10 +25,33 @@ void generateFood(int &foodX, int &foodY,
         }));
 }
 
+void onCallback(char *topic, byte *payload, unsigned int length) {
+    Serial1.printf("Message arrived [%s]: ", topic);
+    String message;
+    for (int i = 0; i < length; i++) {
+        message += (char)payload[i];
+    }
+    if (String(topic) == "snake/input_direction") {
+        if (message == "UP") {
+            payload_Direction = UP;
+        } else if (message == "DOWN") {
+            payload_Direction = DOWN;
+        } else if (message == "LEFT") {
+            payload_Direction = LEFT;
+        } else if (message == "RIGHT") {
+            payload_Direction = RIGHT;
+        } else {
+            payload_Direction = NONE;
+        }
+    }
+}
+
 void Snake(void *pvParameters) {
     vTaskDelay(pdMS_TO_TICKS(100));
 
     PixelBoard *pb = static_cast<PixelBoard *>(pvParameters);
+    pb->mqtt.connect(onCallback);
+    pb->mqtt.subscribe("snake/input_direction");
     bool wasSuspended = false;
     
     while (true) {
@@ -64,7 +88,13 @@ void Snake(void *pvParameters) {
             }
 
             pb->joystick.update();
-            direction = pb->joystick.getCurrentDirection();
+            if (payload_Direction != NONE) {
+                direction = payload_Direction;
+                payload_Direction = NONE;
+            } else {
+                direction = pb->joystick.getCurrentDirection();
+            }
+
             if (direction == NONE) {
                 direction = previousDirection;
             }

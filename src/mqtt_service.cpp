@@ -9,14 +9,19 @@ mqtt_service::mqtt_service(const char* user,
                                    PubSubClient client)
     : user(user), password(pass), port(port), client(client) {}
 
-char* callback(char* topic, byte* payload, unsigned int length) {
-    char* payloadString = (char*)malloc(length + 1);
-    return payloadString;
-}
 
-void mqtt_service::connect() {
+void mqtt_service::connect(void callbackfunction(char*, byte*, unsigned int)) {
     client.setServer(MQTT_Host, port);
-    client.setCallback(callback);
+    while (!client.connected()) {
+        Serial.print("Connecting to MQTT...");
+        if (client.connect("1", user, password)) {
+          Serial.println("Connectet");
+        } else {
+          Serial.print("Error: ");
+          Serial.println(client.state());
+        }
+      }
+    client.setCallback(callbackfunction);
 }
 
 void mqtt_service::subscribe(const char* topic) {
@@ -26,4 +31,3 @@ void mqtt_service::subscribe(const char* topic) {
         Serial.println("Failed to subscribe to topic");
     }
 }
-

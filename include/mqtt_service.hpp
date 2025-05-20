@@ -18,7 +18,7 @@ public:
     const char* pass,
     int port,
     PubSubClient client);
-    void connect();
+    void connect(void callbackfunction(char*, byte*, unsigned int));
     void subscribe(const char* topic);
     void publish(const char* topic, const char* message);
 };

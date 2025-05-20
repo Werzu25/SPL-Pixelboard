@@ -14,6 +14,9 @@
 #define JOYSTICK_X_PIN 34
 #define JOYSTICK_Y_PIN 35
 
+static WiFiClientSecure secureClient;
+static PubSubClient mqttClient(secureClient);
+
 
 const char *mqtt_user = "snake";
 const char *mqtt_password = "tre]:7T\"gm:TZ5a";
@@ -37,13 +40,12 @@ void setup() {
     while (Serial.available()) {
         Serial.read();
     }
-    WiFiClientSecure secureClient;
     secureClient.setInsecure();
-    PubSubClient client(secureClient);
+
 
     PixelBoard *pixelboard =
         new PixelBoard(LEDS1_PIN, LEDS2_PIN, JOYSTICK_BUTTON_PIN,
-                       JOYSTICK_X_PIN, JOYSTICK_Y_PIN, ssid, password, vector<TaskHandle_t>(), {false, false},mqtt_user,mqtt_password,mqtt_port,client);
+                       JOYSTICK_X_PIN, JOYSTICK_Y_PIN, ssid, password, vector<TaskHandle_t>(), {false, false},mqtt_user,mqtt_password,mqtt_port,secureClient);
     pixelboardPtr = pixelboard;
 
     Serial.println("[Setup] Connecting to WiFi...");
