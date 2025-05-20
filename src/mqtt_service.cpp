@@ -22,6 +22,7 @@ void mqtt_service::connect(void callbackfunction(char*, byte*, unsigned int)) {
         }
       }
     client.setCallback(callbackfunction);
+    Serial.println("Set callback");
 }
 
 void mqtt_service::subscribe(const char* topic) {

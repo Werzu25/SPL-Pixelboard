@@ -11,9 +11,9 @@ private:
     const char* password;
     const char* MQTT_Host = "5cb42c9748844ca2bd6d0e57f6406124.s1.eu.hivemq.cloud";
     int port;
-    PubSubClient client;
 
 public:
+    PubSubClient client;
     mqtt_service(const char* user,
     const char* pass,
     int port,

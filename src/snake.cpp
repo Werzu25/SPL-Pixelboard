@@ -26,11 +26,12 @@ void generateFood(int &foodX, int &foodY,
 }
 
 void onCallback(char *topic, byte *payload, unsigned int length) {
-    Serial1.printf("Message arrived [%s]: ", topic);
+    Serial.printf("Message arrived [%s]: ", topic);
     String message;
     for (int i = 0; i < length; i++) {
         message += (char)payload[i];
     }
+    Serial.println(message);
     if (String(topic) == "snake/input_direction") {
         if (message == "UP") {
             payload_Direction = UP;
@@ -50,11 +51,12 @@ void Snake(void *pvParameters) {
     vTaskDelay(pdMS_TO_TICKS(100));
 
     PixelBoard *pb = static_cast<PixelBoard *>(pvParameters);
-    pb->mqtt.connect(onCallback);
-    pb->mqtt.subscribe("snake/input_direction");
     bool wasSuspended = false;
     
     while (true) {
+        pb->mqtt.connect(onCallback);
+        pb->mqtt.subscribe("snake/input_direction");
+
         list<pair<int, int>> snakeBody;
         int snakeLength = SNAKE_START_LENGTH;
         int snakeHeadX = GRID_SIZE_X / 2;
@@ -80,6 +82,7 @@ void Snake(void *pvParameters) {
         pb->display.setLed(foodX, foodY, FOOD_COLOR);
 
         while (!gameOver) {
+            pb->mqtt.client.loop();
             vector<bool> wasSuspended = pb->getWasSuspended();
             if (wasSuspended[1] == true) {
                 wasSuspended[1] = false;
@@ -93,10 +96,9 @@ void Snake(void *pvParameters) {
                 payload_Direction = NONE;
             } else {
                 direction = pb->joystick.getCurrentDirection();
-            }
-
-            if (direction == NONE) {
-                direction = previousDirection;
+                if (direction == NONE) {
+                    direction = previousDirection;
+                }
             }
             
             if (millis() - lastMoveTime >= GAME_SPEED_DELAY) {

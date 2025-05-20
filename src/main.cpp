@@ -21,8 +21,8 @@ static PubSubClient mqttClient(secureClient);
 const char *mqtt_user = "snake";
 const char *mqtt_password = "tre]:7T\"gm:TZ5a";
 const int mqtt_port = 8883;
-const char *ssid = "pixel";
-const char *password = "password";
+const char *ssid = "iPhone";
+const char *password = "kaufdirwlan";
 
 TaskHandle_t MenuHandle = NULL;
 TaskHandle_t SnakeHandle = NULL;
