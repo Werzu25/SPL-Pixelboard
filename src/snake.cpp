@@ -1,18 +1,27 @@
 #include "snake.hpp"
 #include "pixelboard.hpp"
 #include <list>
+#include <FastLED.h>           // for CHSV()
 
 using namespace std;
 
-const int GRID_SIZE_X = 32;
-const int GRID_SIZE_Y = 16;
+const int GRID_SIZE_X        = 32;
+const int GRID_SIZE_Y        = 16;
 const int SNAKE_START_LENGTH = 3;
-const int GAME_SPEED_DELAY = 200;
-const CRGB SNAKE_COLOR = CRGB::Green;
-const CRGB FOOD_COLOR = CRGB::Blue;
-const CRGB BACKGROUND_COLOR = CRGB::Black;
-const CRGB WALL_COLOR = CRGB::Red;
+const int GAME_SPEED_DELAY   = 200;
+const CRGB FOOD_COLOR        = CRGB::Blue;
+const CRGB BACKGROUND_COLOR  = CRGB::Black;
+const CRGB WALL_COLOR        = CRGB::Red;
 Direction payload_Direction = NONE;
+
+// remove this fixed‐color:
+// const CRGB SNAKE_COLOR = CRGB::Violet;
+
+// rolling hue + independent hue‐timer:
+// speed up the color loop (smaller interval)
+static uint8_t  snakeHue            = 0;
+static unsigned long lastHueUpdate = 0;
+static const unsigned long HUE_INTERVAL = 5;
 
 void generateFood(int &foodX, int &foodY,
                   const list<pair<int, int>> &snakeBody) {
@@ -63,6 +72,7 @@ void Snake(void *pvParameters) {
         int snakeHeadY = GRID_SIZE_Y / 2;
         Direction direction = RIGHT;
         Direction previousDirection = RIGHT;
+        Direction joystickDirection = NONE;
         int foodX, foodY;
         bool gameOver = false;
         unsigned long lastMoveTime = 0;
@@ -77,11 +87,20 @@ void Snake(void *pvParameters) {
         generateFood(foodX, foodY, snakeBody);
 
         for (const auto &segment : snakeBody) {
-            pb->display.setLed(segment.first, segment.second, SNAKE_COLOR);
+            pb->display.setLed(segment.first, segment.second, CHSV(snakeHue, 255, 255));
         }
         pb->display.setLed(foodX, foodY, FOOD_COLOR);
 
         while (!gameOver) {
+            joystickDirection = NONE;
+            payload_Direction = NONE;
+            unsigned long now = millis();
+
+            if (now - lastHueUpdate >= HUE_INTERVAL) {
+                lastHueUpdate = now;
+                snakeHue++;
+            }
+
             pb->mqtt.client.loop();
             vector<bool> wasSuspended = pb->getWasSuspended();
             if (wasSuspended[1] == true) {
@@ -91,18 +110,30 @@ void Snake(void *pvParameters) {
             }
 
             pb->joystick.update();
+            joystickDirection = pb->joystick.getCurrentDirection();
+            
+            if (joystickDirection != NONE) {
+                direction = joystickDirection;
+            }
+
             if (payload_Direction != NONE) {
                 direction = payload_Direction;
-                payload_Direction = NONE;
-            } else {
-                direction = pb->joystick.getCurrentDirection();
-                if (direction == NONE) {
-                    direction = previousDirection;
-                }
             }
+
+            Serial.print("Joystick Direction: ");
+            Serial.println(joystickDirection);
+            Serial.print("Payload Direction: ");
+            Serial.println(payload_Direction);
+        
+            if (direction == NONE) {
+                direction = previousDirection;
+            }
+
+            Serial1.println(direction);
             
-            if (millis() - lastMoveTime >= GAME_SPEED_DELAY) {
-                lastMoveTime = millis();
+            // only move the snake every GAME_SPEED_DELAY:
+            if (now - lastMoveTime >= GAME_SPEED_DELAY) {
+                lastMoveTime = now;
                 
                 int nextHeadX = snakeHeadX;
                 int nextHeadY = snakeHeadY;
@@ -163,24 +194,32 @@ void Snake(void *pvParameters) {
                     break;
                 }
 
+                // draw new head with current hue
+                CRGB dynColor = CHSV(snakeHue, 255, 255);
                 snakeHeadX = nextHeadX;
                 snakeHeadY = nextHeadY;
-            
                 snakeBody.push_front({snakeHeadX, snakeHeadY});
-            
+                pb->display.setLed(snakeHeadX, snakeHeadY, dynColor);
+
                 if (snakeHeadX == foodX && snakeHeadY == foodY) {
+                    // ate food: grow, pick a new food spot
                     snakeLength++;
+                    int oldFoodX = foodX, oldFoodY = foodY;
                     generateFood(foodX, foodY, snakeBody);
-                    pb->display.setLed(previousFoodX, previousFoodY,
-                                       BACKGROUND_COLOR);
+
+                    // don't clear oldFoodX/oldFoodY – it's now snake
+                    // pb->display.setLed(oldFoodX, oldFoodY, BACKGROUND_COLOR);
+
+                    pb->display.setLed(foodX, foodY, FOOD_COLOR);
                 } else {
-                    pair<int, int> tail = snakeBody.back();
+                    // normal tail removal
+                    auto tail = snakeBody.back();
                     snakeBody.pop_back();
                     pb->display.setLed(tail.first, tail.second, BACKGROUND_COLOR);
+                    // re‐draw existing food
+                    pb->display.setLed(foodX, foodY, FOOD_COLOR);
                 }
-                pb->display.setLed(snakeHeadX, snakeHeadY, SNAKE_COLOR);
-                pb->display.setLed(foodX, foodY, FOOD_COLOR);
-            
+
                 previousFoodX = foodX;
                 previousFoodY = foodY;
                 previousSnakeHeadX = snakeHeadX;
@@ -217,4 +256,8 @@ void Snake(void *pvParameters) {
         
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
+}
+
+void SnakeMultiplayer(void *pvParameters) {
+
 }
