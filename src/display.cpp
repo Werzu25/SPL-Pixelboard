@@ -76,3 +76,11 @@ void Display::print(String s) {
         if (x >= 32) break; // Stop if we've reached the end of the display
     }
 }
+
+void Display::drawRect(int x, int y, int width, int height, CRGB color) {
+    for (int i = 0; i < width; i++) {
+        for (int j = 0; j < height; j++) {
+            setLed(x + i, y + j, color);
+        }
+    }
+}

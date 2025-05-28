@@ -10,6 +10,7 @@ class Display {
     void setLed(int x, int y, CRGB color);
     void clear();
     void print(String s);
+    void drawRect(int x, int y, int width, int height, CRGB color);
 
   private:
     int getLed(int x, int y);
