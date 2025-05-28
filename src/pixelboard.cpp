@@ -22,7 +22,7 @@ PixelBoard::PixelBoard(int leds1_pin,
       tasks(tasks),
       wasSuspended(wasSuspended),
       mqtt(mqtt_user, mqtt_password, mqtt_port, mqtt_client),
-      dht_sensor(dht_pin, dht_type) {
+      dht(dht_pin, dht_type) {
 }
 
 vector<TaskHandle_t> PixelBoard::getTasks() {
