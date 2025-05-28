@@ -34,7 +34,7 @@ public:
   Joystick joystick;
   WiFiManager wifi;
   mqtt_service mqtt;
-  dht_sensor dht_sensor;
+  dht_sensor dht;
   vector<TaskHandle_t> tasks;
   vector<bool> wasSuspended;
   vector<TaskHandle_t> getTasks();
