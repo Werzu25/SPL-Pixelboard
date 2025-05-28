@@ -13,13 +13,16 @@ PixelBoard::PixelBoard(int leds1_pin,
                        const char *mqtt_user,
                        const char *mqtt_password,
                        int mqtt_port,
-                       PubSubClient mqtt_client)
+                       PubSubClient mqtt_client,
+                       int dht_pin,
+                       int dht_type)
     : display(leds1_pin, leds2_pin),
       joystick(joystick_pin, joystickX_pin, joystickY_pin),
       wifi(ssid, password),
       tasks(tasks),
       wasSuspended(wasSuspended),
-      mqtt(mqtt_user, mqtt_password, mqtt_port, mqtt_client) {
+      mqtt(mqtt_user, mqtt_password, mqtt_port, mqtt_client),
+      dht_sensor(dht_pin, dht_type) {
 }
 
 vector<TaskHandle_t> PixelBoard::getTasks() {

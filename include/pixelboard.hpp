@@ -6,6 +6,7 @@
 #include "wifi.hpp"
 #include "mqtt_service.hpp"
 #include <PubSubClient.h>
+#include "dht_sensor.hpp"
 #include <vector>
 
 using namespace std;
@@ -25,12 +26,15 @@ public:
              const char *mqtt_user,
              const char *mqtt_password,
              int mqtt_port,
-             PubSubClient mqtt_client);
+             PubSubClient mqtt_client,
+             int dht_pin,
+             int dht_type);
 
   Display display;
   Joystick joystick;
   WiFiManager wifi;
   mqtt_service mqtt;
+  dht_sensor dht_sensor;
   vector<TaskHandle_t> tasks;
   vector<bool> wasSuspended;
   vector<TaskHandle_t> getTasks();
