@@ -6,6 +6,7 @@
 #include "joystick.hpp"
 #include "mqtt.hpp"
 #include "ntp.hpp"
+#include "spreadsheet_writer.hpp"
 #include "weather.hpp"
 #include "wifi.hpp"
 #include <vector>
@@ -19,7 +20,9 @@ class PixelBoard {
                const char *password, vector<TaskHandle_t> tasks,
                vector<bool> wasSuspended, const char *mqtt_user,
                const char *mqtt_password, int mqtt_port, const char *mqtt_host,
-               int dht_pin, int dht_type);
+               int dht_pin, int dht_type, const char *project_id,
+               const char *client_email, const char *private_key,
+               const char *spreadsheet_id);
     Display display;
     Joystick joystick;
     WiFiManager wifi;
@@ -27,6 +30,7 @@ class PixelBoard {
     Ntp ntp;
     Weather weather;
     DhtSensor dht;
+    SpreadsheetWriter spreadsheetWriter;
     vector<bool> wasSuspended;
     void updateMqttDiretion();
     Direction mqttDirection;

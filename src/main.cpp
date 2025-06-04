@@ -6,6 +6,11 @@
 #include "system.hpp"
 #include <Arduino.h>
 
+#define PROJECT_ID "REPLACE_WITH_YOUR_PROJECT_ID"
+#define CLIENT_EMAIL "REPLACE_WITH_YOUR_CLIENT_EMAIL"
+const char PRIVATE_KEY[] PROGMEM = "-----BEGIN PRIVATE KEY-----\nREPLACE_WITH_YOUR_PRIVATE_KEY\n-----END PRIVATE KEY-----\n";
+const char spreadsheetId[] = "YOUR_SPREADSHEET_ID";
+
 #define LEDS1_PIN 25
 #define LEDS2_PIN 26
 #define JOYSTICK_BUTTON_PIN 32
@@ -13,6 +18,7 @@
 #define JOYSTICK_Y_PIN 35
 #define DHT_PIN 21
 #define DHT_TYPE DHT22
+
 
 const char *mqtt_user = "snake";
 const char *mqtt_password = "tre]:7T\"gm:TZ5a";
@@ -29,7 +35,8 @@ void setup() {
     PixelBoard *pixelboard = new PixelBoard(
         LEDS1_PIN, LEDS2_PIN, JOYSTICK_BUTTON_PIN, JOYSTICK_X_PIN,
         JOYSTICK_Y_PIN, ssid, password, vector<TaskHandle_t>(), {false, false},
-        mqtt_user, mqtt_password, mqtt_port, mqtt_host, DHT_PIN, DHT_TYPE);
+        mqtt_user, mqtt_password, mqtt_port, mqtt_host, DHT_PIN, DHT_TYPE,
+        PROJECT_ID, CLIENT_EMAIL, PRIVATE_KEY, spreadsheetId);
 
     TaskHandle_t MenuHandle = NULL;
     TaskHandle_t SnakeHandle = NULL;
