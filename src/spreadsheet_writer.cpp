@@ -24,17 +24,36 @@ SpreadsheetWriter::SpreadsheetWriter(const char *project_id,
 }
 
 void SpreadsheetWriter::sendData(char data[][4]) {
-    if (GSheet.ready())
-    {
-        FirebaseJson valueRange;
-        FirebaseJson response;
-        valueRange.add("majorDimension", "COLUMNS");
-        for (int i = 0; i < 4; i++) {
-            String index = "values/[0]/[" + i;
-            index += "]";
-            valueRange.set(index, data[i][0]);
-        }
-        GSheet.values.append(&response, spreadsheetId, "Sheet1!A1" , &valueRange);
+    if (!GSheet.ready()) {
+        Serial.println("[SpreadsheetWriter] GSheet not ready");
+        return;
+    }
+    FirebaseJsonArray row;
+    for (int i = 0; i < 4; i++) {
+        row.add(data[i]);
+    }
+    FirebaseJsonArray values;
+    values.add(row);
+    FirebaseJson valueRange;
+    valueRange.set("values", values);
+    String payload;
+    valueRange.toString(payload, false);
+    Serial.print("[SpreadsheetWriter] payload: ");
+    Serial.println(payload);
+    FirebaseJson response;
+    bool ok = GSheet.values.append(&response, spreadsheetId,
+                                   "Sheet1!A1",
+                                   &valueRange);
+    if (!ok) {
+        Serial.print("[SpreadsheetWriter] append error: ");
+        Serial.println(GSheet.errorReason());
+        
+        String resp;
+        response.toString(resp, false);
+        Serial.print("[SpreadsheetWriter] response: ");
+        Serial.println(resp);
+    } else {
+        Serial.println("[SpreadsheetWriter] row appended");
     }
 }
 
