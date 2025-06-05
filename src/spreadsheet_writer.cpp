@@ -23,7 +23,7 @@ SpreadsheetWriter::SpreadsheetWriter(const char *project_id,
     GSheet.setPrerefreshSeconds(10 * 60);
 }
 
-void SpreadsheetWriter::sendData(char data[][4]) {
+void SpreadsheetWriter::sendData(char* data[]) {
     if (!GSheet.ready()) {
         Serial.println("[SpreadsheetWriter] GSheet not ready");
         return;

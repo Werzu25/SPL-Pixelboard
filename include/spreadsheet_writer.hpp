@@ -12,7 +12,7 @@ private:
     const char* PRIVATE_KEY;
     const char* spreadsheetId;
 public:
-    void sendData(char data[][4]);
+    void sendData(char* data[]);
     SpreadsheetWriter(const char* project_id, const char* client_email, const char private_key[], const char spreadsheet_id[]);
 };
 
