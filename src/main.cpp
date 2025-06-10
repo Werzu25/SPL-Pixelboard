@@ -95,8 +95,15 @@ void setup() {
 
     Serial.println("[Setup] Initialization complete");
 
+    String timeString = String("Time: ") + String(pixelboard->ntp.getCurrentTime());
+    String temperatureString = String("Temperature: ") + String(pixelboard->dht.getTemperature()) + String(" °C");
+    String humidityString = String("Humidity: ") + String(pixelboard->dht.getHumidity()) + String(" %");
     // Prepare spreadsheet data
-    static char cells[4][4] = {"A1", "B1", "C1", "D1"};
+    static char* cells[4] = {
+        (char*)timeString.c_str(),
+        (char*)temperatureString.c_str(),
+        (char*)humidityString.c_str(),
+    };
     pixelboard->spreadsheetWriter.sendData(cells);
 }
 

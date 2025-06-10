@@ -28,32 +28,45 @@ void SpreadsheetWriter::sendData(char* data[]) {
         Serial.println("[SpreadsheetWriter] GSheet not ready");
         return;
     }
-    FirebaseJsonArray row;
-    for (int i = 0; i < 4; i++) {
-        row.add(data[i]);
+
+    FirebaseJsonArray* row = new FirebaseJsonArray();
+    if (!row) {
+        Serial.println("[SpreadsheetWriter] Failed to allocate row");
+        return;
     }
-    FirebaseJsonArray values;
-    values.add(row);
-    FirebaseJson valueRange;
-    valueRange.set("values", values);
-    String payload;
-    valueRange.toString(payload, false);
-    Serial.print("[SpreadsheetWriter] payload: ");
-    Serial.println(payload);
+
+    for (int i = 0; i < 4; i++) {
+        row->add(data[i] ? data[i] : "");
+    }
+
+    FirebaseJsonArray* values = new FirebaseJsonArray();
+    if (!values) {
+        delete row;
+        Serial.println("[SpreadsheetWriter] Failed to allocate values");
+        return;
+    }
+    values->add(*row);
+
+    FirebaseJson* valueRange = new FirebaseJson();
+    if (!valueRange) {
+        delete row;
+        delete values;
+        Serial.println("[SpreadsheetWriter] Failed to allocate valueRange");
+        return;
+    }
+    valueRange->set("values", *values);
+
     FirebaseJson response;
-    bool ok = GSheet.values.append(&response, spreadsheetId,
-                                   "Sheet1!A1",
-                                   &valueRange);
+    bool ok = GSheet.values.append(&response, spreadsheetId, "Sheet1!A1", valueRange);
+
+    delete row;
+    delete values;
+    delete valueRange;
+    
     if (!ok) {
-        Serial.print("[SpreadsheetWriter] append error: ");
-        Serial.println(GSheet.errorReason());
-        
-        String resp;
-        response.toString(resp, false);
-        Serial.print("[SpreadsheetWriter] response: ");
-        Serial.println(resp);
+        Serial.printf("[SpreadsheetWriter] Error: %s\n", GSheet.errorReason());
     } else {
-        Serial.println("[SpreadsheetWriter] row appended");
+        Serial.println("[SpreadsheetWriter] Row appended successfully");
     }
 }
 
